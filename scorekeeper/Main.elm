@@ -74,7 +74,7 @@ update msg model =
                 save model
 
         Cancel ->
-            { model | name = "" }
+            { model | name = "", playerId = Nothing }
 
         DeletePlay play ->
             deletePlay model play
@@ -96,6 +96,7 @@ add model =
     in
         { model
         | players = newPlayers
+        , playerId = Nothing
         , name = "" }
 
 edit : Model -> Int -> Model
@@ -107,7 +108,8 @@ edit model id =
         { model
         | players = newPlayers
         , plays = newPlays
-        , playerId = Nothing }
+        , playerId = Nothing
+        , name = "" }
 
 updatePlayerName : String -> Int -> Player -> Player
 updatePlayerName name id player =
