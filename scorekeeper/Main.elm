@@ -59,6 +59,11 @@ update msg model =
         Input name ->
             { model | name = name }
 
+        Edit player ->
+            { model
+            | name = player.name
+            , playerId = Just player.id }
+
         Save ->
             if (String.isEmpty model.name) then
                 model
