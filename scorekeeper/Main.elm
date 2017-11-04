@@ -191,18 +191,18 @@ playerList model =
         --    (List.map player model.players)
         model.players
             |> List.sortBy .name
-            |> List.map player
+            |> List.map (player model.playerId)
             |> ul []
 
-player : Player -> Html Msg
-player player =
+player : Maybe Int -> Player -> Html Msg
+player editPlayerId player =
     li []
         [ i
             [ class "edit"
             , onClick (Edit player)
             ]
             []
-        , div []
+        , div [ class (highlightEditPlayer editPlayerId player) ]
             [ text player.name ]
         , button
             [ type_ "button"
@@ -217,6 +217,17 @@ player player =
         , div []
             [ text (toString player.points) ]
         ]
+
+highlightEditPlayer : Maybe Int -> Player -> String
+highlightEditPlayer editPlayerId player =
+    case editPlayerId of
+        Nothing ->
+            ""
+        Just id ->
+            if id == player.id then
+                "edit"
+            else
+                ""
 
 pointTotal : Model -> Html Msg
 pointTotal model =
@@ -238,11 +249,20 @@ playerForm model =
             , placeholder "Add/Edit Player..."
             , onInput Input
             , value model.name
+            , class (highlightEditInput model.playerId)
             ]
             []
         , button [ type_ "submit" ] [ text "Save" ]
         , button [ type_ "button", onClick Cancel ] [ text "Cancel" ]
         ]
+
+highlightEditInput : Maybe Int -> String
+highlightEditInput editPlayerId =
+    case editPlayerId of
+        Just id ->
+            "edit"
+        Nothing ->
+            ""
 
 playSection : Model -> Html Msg
 playSection model =
