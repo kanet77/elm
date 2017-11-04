@@ -150,14 +150,7 @@ deletePlay : Model -> Play -> Model
 deletePlay model play =
     let
         newPlays = List.filter (\p -> p.id /= play.id) model.plays
-        newPlayers =
-            List.map
-                (\p ->
-                    if p.id == play.playerId then
-                        { p | points = p.points - play.points }
-                    else
-                        p
-                ) model.players
+        newPlayers = List.map (updatePlayerPoints -play.points play.playerId) model.players
     in
         { model
         | plays = newPlays
