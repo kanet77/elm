@@ -56,13 +56,16 @@ type Msg
 update : Msg -> Model -> Model
 update msg model =
     case msg of
-        Input name ->
-            { model | name = name }
-
         Edit player ->
             { model
             | name = player.name
             , playerId = Just player.id }
+
+        Score player points ->
+            score model player points
+
+        Input name ->
+            { model | name = name }
 
         Save ->
             if (String.isEmpty model.name) then
@@ -73,11 +76,8 @@ update msg model =
         Cancel ->
             { model | name = "" }
 
-        Score player points ->
-            score model player points
-
-        _ ->
-            model
+        DeletePlay play ->
+            deletePlay model play
 
 save : Model -> Model
 save model =
@@ -129,7 +129,7 @@ score : Model -> Player -> Int -> Model
 score model player points =
     let
         newPlayers = List.map (updatePlayerPoints points player.id) model.players
-        play =Play (List.length model.plays) player.id player.name points
+        play = Play (List.length model.plays) player.id player.name points
     in
         { model
         | players = newPlayers
@@ -144,6 +144,24 @@ updatePlayerPoints points playerId player =
         player
 
 
+deletePlay : Model -> Play -> Model
+deletePlay model play =
+    let
+        newPlays = List.filter (\p -> p.id /= play.id) model.plays
+        newPlayers =
+            List.map
+                (\p ->
+                    if p.id == play.playerId then
+                        { p | points = p.points - play.points }
+                    else
+                        p
+                ) model.players
+    in
+        { model
+        | plays = newPlays
+        , players = newPlayers }
+
+
 -- view
 
 
@@ -153,7 +171,7 @@ view model =
         [ h1 [] [ text "Score Keeper" ]
         , playerSection model
         , playerForm model
-        , playsList model
+        , playSection model
         --, p [] [ text (toString model) ]
         ]
 
@@ -231,22 +249,38 @@ playerForm model =
         , button [ type_ "button", onClick Cancel ] [ text "Cancel" ]
         ]
 
-playsList : Model -> Html Msg
-playsList model =
+playSection : Model -> Html Msg
+playSection model =
+    div []
+        [ playHeader
+        , playList model
+        ]
+
+playHeader : Html Msg
+playHeader =
+    header []
+        [ div [] [ text "Plays" ]
+        , div [] [ text "Points" ]
+        ]
+
+playList : Model -> Html Msg
+playList model =
     model.plays
         |> List.map play
         |> ul []
 
-
 play : Play -> Html Msg
 play play =
     li []
-        [ div []
+        [ i
+            [ class "remove"
+            , onClick (DeletePlay play)
+            ] []
+        , div []
             [ text play.name ]
         , div []
             [ text (toString play.points) ]
         ]
-
 
 main : Program Never Model Msg
 main =
